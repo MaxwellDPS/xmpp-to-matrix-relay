@@ -22,46 +22,33 @@
 # We use an initial docker container to build all of the runtime dependencies,
 # then transfer those dependencies to the container we're going to ship,
 # before throwing this one away
-ARG PYTHON_VERSION=3.10
-FROM docker.io/python:${PYTHON_VERSION}-alpine as builder
+FROM python:3.10 as builder
 
 ##
 ## Build libolm for matrix-nio e2e support
 ##
 
 # Install libolm build dependencies
-ARG LIBOLM_VERSION=3.2.10
-RUN apk add --no-cache \
-     make \
+RUN apt-get update && \
+    apt-get install -y \
+    libolm-dev \
+    libolm3 \
+    make \
     cmake \
     gcc \
     g++ \
     git \
     libffi-dev \
-    yaml-dev \
-    python3-dev \
-    libpq \
-    postgresql-dev
-
-
-# Build libolm
-#
-# Also build the libolm python bindings and place them at /python-libs
-# We will later copy contents from both of these folders to the runtime
-# container
-COPY docker/build_and_install_libolm.sh /scripts/
-RUN /scripts/build_and_install_libolm.sh ${LIBOLM_VERSION} /python-libs
+    python3-dev 
 
 # Install python runtime modules. We do this before copying the source code
 # such that these dependencies can be cached
 # This speeds up subsequent image builds when the source code is changed
 RUN mkdir -p /src/bot
 COPY bot/__init__.py /src/bot/
-COPY bot/nest_asyncio/ /src/bot/nest_asyncio/
 COPY README.md xmpp-bot /src/
 
 # Build the dependencies
-RUN echo "aaa"
 COPY setup.py /src/setup.py
 RUN pip install --prefix="/python-libs" --no-warn-script-location "/src/.[postgres]"
 
@@ -78,19 +65,18 @@ RUN pip install --prefix="/python-libs" --no-warn-script-location "/src/.[postgr
 
 # Create the container we'll actually ship. We need to copy libolm and any
 # python dependencies that we built above to this container
-FROM docker.io/python:${PYTHON_VERSION}-alpine
+FROM python:3.10
 
 # Copy python dependencies from the "builder" container
 COPY --from=builder /python-libs /usr/local
 
-# Copy libolm from the "builder" container
-COPY --from=builder /usr/local/lib/libolm* /usr/local/lib/
 
 # Install any native runtime dependencies
-RUN apk add --no-cache \
+RUN apt-get update && \
+    apt-get install -y \
     libstdc++ \
-    libpq \
-    postgresql-dev
+    libolm-dev \
+    libolm3 
 
 # Specify a volume that holds the config file, SQLite3 database,
 # and the matrix-nio store

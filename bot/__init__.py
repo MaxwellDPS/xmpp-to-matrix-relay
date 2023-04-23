@@ -1,4 +1,6 @@
 import sys
+from bot.nest_asyncio import magic
+magic.apply()
 
 # Check that we're not running on an unsupported Python version.
 if sys.version_info < (3, 5):

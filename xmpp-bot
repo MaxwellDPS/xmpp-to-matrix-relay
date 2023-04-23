@@ -2,7 +2,7 @@
 import asyncio
 
 try:
-    from my_project_name import main
+    from bot import main
 
     # Run the main function of the bot
     asyncio.get_event_loop().run_until_complete(main.main())

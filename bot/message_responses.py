@@ -2,9 +2,9 @@ import logging
 
 from nio import AsyncClient, MatrixRoom, RoomMessageText
 
-from my_project_name.chat_functions import send_text_to_room
-from my_project_name.config import Config
-from my_project_name.storage import Storage
+from bot.chat_functions import send_text_to_room
+from bot.config import Config
+from bot.storage import Storage
 
 logger = logging.getLogger(__name__)
 
@@ -48,5 +48,5 @@ class Message:
 
     async def _hello_world(self) -> None:
         """Say hello"""
-        text = "Hello, world!"
+        text = "Hello, world! 🤖"
         await send_text_to_room(self.client, self.room.room_id, text)

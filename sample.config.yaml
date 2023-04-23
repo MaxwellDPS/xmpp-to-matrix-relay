@@ -21,6 +21,9 @@ matrix:
   # What to name the logged in device
   device_name: my-project-name
 
+bot:
+  rules: ""
+
 storage:
   # The database connection string
   # For SQLite3, this would look like:

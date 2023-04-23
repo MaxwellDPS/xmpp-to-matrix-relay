@@ -6,7 +6,7 @@ from typing import Any, List, Optional
 
 import yaml
 
-from my_project_name.errors import ConfigError
+from bot.errors import ConfigError
 
 logger = logging.getLogger()
 logging.getLogger("peewee").setLevel(
@@ -98,12 +98,30 @@ class Config:
             raise ConfigError("Must supply either user token or password")
 
         self.device_id = self._get_cfg(["matrix", "device_id"], required=True)
+        self.generate_device_id = self._get_cfg(["matrix", "generate_device_id"])
         self.device_name = self._get_cfg(
             ["matrix", "device_name"], default="nio-template"
         )
         self.homeserver_url = self._get_cfg(["matrix", "homeserver_url"], required=True)
 
-        self.command_prefix = self._get_cfg(["command_prefix"], default="!c") + " "
+        self.command_prefix = self._get_cfg(["command_prefix"], default="!")
+
+        self.rules:str = self._get_cfg(["bot", "rules"], required=False)
+        self.admins:list = self._get_cfg(["bot","admins"], required=False)
+        self.bot_name:list = self._get_cfg(["bot","name"])
+
+        self.muted_peeps:list = self._get_cfg(["xmpp", "muted_users"], required=False)
+        
+        self.xmpp_username:str = self._get_cfg(["xmpp", "username"])
+        self.xmpp_password:str =  self._get_cfg(["xmpp", "password"])
+        self.xmpp_room:str =  self._get_cfg(["xmpp", "room"])
+        self.xmpp_nick:str =  self._get_cfg(["xmpp", "nick"])
+
+        self.keyword_alerts:bool =  self._get_cfg(["xmpp", "keyword_alerts", "enabled"])
+        self.alert_prefix:str = self._get_cfg(["xmpp", "keyword_alerts", "alert_prefix"])
+        self.keywords:list[str] = self._get_cfg(["xmpp", "keyword_alerts", "keywords"])
+
+        self.xmpp_matrix_relay_room = self._get_cfg(["xmpp", "matrix_relay_room"])
 
     def _get_cfg(
         self,

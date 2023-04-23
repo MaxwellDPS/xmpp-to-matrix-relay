@@ -3,7 +3,6 @@ import os
 
 from setuptools import find_packages, setup
 
-
 def exec_file(path_segments):
     """Execute a single python file to get the variables defined in it"""
     result = {}
@@ -20,12 +19,12 @@ def read_file(path_segments):
         return f.read()
 
 
-version = exec_file(("my_project_name", "__init__.py"))["__version__"]
+version = exec_file(("bot", "__init__.py"))["__version__"]
 long_description = read_file(("README.md",))
 
 
 setup(
-    name="my-project-name",
+    name="xmpp-bot",
     version=version,
     url="https://github.com/anoadragon453/nio-template",
     description="A matrix bot to do amazing things!",
@@ -34,6 +33,11 @@ setup(
         "matrix-nio[e2e]>=0.10.0",
         "Markdown>=3.1.1",
         "PyYAML>=5.1.2",
+        "essential_generators",
+        "flask",
+        "flask[async]",
+        "slixmpp",
+        "nest-asyncio"
     ],
     extras_require={
         "postgres": ["psycopg2>=2.8.5"],
@@ -41,7 +45,8 @@ setup(
             "isort==5.0.4",
             "flake8==3.8.3",
             "flake8-comprehensions==3.2.3",
-            "black==19.10b0",
+            "black==19.10b0"
+            
         ],
     },
     classifiers=[
@@ -55,5 +60,5 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     # Allow the user to run the bot with `my-project-name ...`
-    scripts=["my-project-name"],
+    scripts=["xmpp-bot"],
 )

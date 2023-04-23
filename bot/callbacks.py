@@ -1,5 +1,5 @@
 import logging
-
+import asyncio
 from nio import (
     AsyncClient,
     InviteMemberEvent,
@@ -11,17 +11,16 @@ from nio import (
     UnknownEvent,
 )
 
-from my_project_name.bot_commands import Command
-from my_project_name.chat_functions import make_pill, react_to_event, send_text_to_room
-from my_project_name.config import Config
-from my_project_name.message_responses import Message
-from my_project_name.storage import Storage
+from bot.bot_commands import Command
+from bot.chat_functions import make_pill, react_to_event, send_text_to_room
+from bot.config import Config
+from bot.message_responses import Message
+from bot.storage import Storage
 
 logger = logging.getLogger(__name__)
 
-
 class Callbacks:
-    def __init__(self, client: AsyncClient, store: Storage, config: Config):
+    def __init__(self, client: AsyncClient, store: Storage, config: Config, app):
         """
         Args:
             client: nio client used to interact with matrix.
@@ -30,10 +29,17 @@ class Callbacks:
 
             config: Bot configuration parameters.
         """
+        
         self.client = client
         self.store = store
         self.config = config
         self.command_prefix = config.command_prefix
+        self.app = app
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.dat_app())
+
+        
+        
 
     async def message(self, room: MatrixRoom, event: RoomMessageText) -> None:
         """Callback for when a message event is received
@@ -209,3 +215,14 @@ class Callbacks:
         logger.debug(
             f"Got unknown event with type to {event.type} from {event.sender} in {room.room_id}."
         )
+
+    async def dat_app(self):
+        
+        @self.app.route('/')
+        async def index(self):
+            await send_text_to_room(
+                    self.client,
+                    self.room.room_id,
+                    f"🤖 THIS IS FUCKING STUPID AND SHOULD HAVE NEVER WORKED FML",
+                )
+        

@@ -15,15 +15,18 @@ from nio import (
     RoomMessageText,
     UnknownEvent,
 )
+import slixmpp
 
-from my_project_name.callbacks import Callbacks
-from my_project_name.config import Config
-from my_project_name.storage import Storage
+
+from bot.callbacks import Callbacks
+from bot.config import Config
+from bot.storage import Storage
+from bot.xmpp import xmpp
 
 logger = logging.getLogger(__name__)
 
 
-async def main():
+async def main(app):
     """The first function that is run when starting the bot"""
 
     # Read user-configured options from a config file.
@@ -61,13 +64,15 @@ async def main():
         client.user_id = config.user_id
 
     # Set up event callbacks
-    callbacks = Callbacks(client, store, config)
+    callbacks = Callbacks(client, store, config, app)
     client.add_event_callback(callbacks.message, (RoomMessageText,))
     client.add_event_callback(
         callbacks.invite_event_filtered_callback, (InviteMemberEvent,)
     )
     client.add_event_callback(callbacks.decryption_failure, (MegolmEvent,))
     client.add_event_callback(callbacks.unknown, (UnknownEvent,))
+
+    
 
     # Keep trying to reconnect on failure (with some time in-between)
     while True:
@@ -105,7 +110,20 @@ async def main():
                 # Login succeeded!
 
             logger.info(f"Logged in as {config.user_id}")
+
+            # xmpp_c:slixmpp.ClientXMPP = xmpp(client, config)
+            # xmpp_c.register_plugin('xep_0030') # Service Discovery
+            # xmpp_c.register_plugin('xep_0045') # Multi-User Chat
+            # xmpp_c.register_plugin('xep_0199') # XMPP Ping
+
+            #await client.sync(full_state=True)
+            # # Connect to the XMPP server and start processing XMPP stanzas.
+            
             await client.sync_forever(timeout=30000, full_state=True)
+            logger.info(f"[+] Launched matrix client")
+            # xmpp_c.connect()
+            # xmpp_c.loop.run_forever()
+            
 
         except (ClientConnectionError, ServerDisconnectedError):
             logger.warning("Unable to connect to homeserver, retrying in 15s...")
@@ -116,6 +134,14 @@ async def main():
             # Make sure to close the client connection on disconnect
             await client.close()
 
+from flask import Flask
+
+app = Flask(__name__)
+
 
 # Run the main function in an asyncio event loop
-asyncio.get_event_loop().run_until_complete(main())
+loop = asyncio.get_event_loop()
+#asyncio.ensure_future(main())
+#asyncio.ensure_future(xmpp_c1.loop.run_forever())
+loop.run_until_complete(main(app))
+#loop.run_forever()
